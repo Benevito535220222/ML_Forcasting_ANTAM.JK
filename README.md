@@ -98,17 +98,19 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 
 3. Pemeriksaan outlier. Outlier dideteksi menggunakan metode IQR (Interquartile Range) pada kolom Close. Ditemukan 298 data outlier yang tersebar pada beberapa periode. Visualisasi menunjukkan bahwa sebagian besar outlier terjadi pada masa krisis global (2007–2008) dan pandemi COVID-19 (2020), yang merefleksikan volatilitas harga ekstrem di pasar saham.
 
+![image](https://github.com/user-attachments/assets/96c74f49-b332-498e-a046-765f08e0d135)
+
 4. Visualisasi tren harga close dari waktu ke waktu. Grafik garis harga penutupan (Close) menunjukkan adanya fluktuasi harga signifikan sepanjang periode pengamatan. Terlihat tren kenaikan tajam antara tahun 2006–2008, diikuti penurunan pasca krisis, dan kembali meningkat tajam di tahun 2020 yang bertepatan dengan masa pandemi.
 
-
+![image](https://github.com/user-attachments/assets/38b77b88-f050-4c37-b32c-1cae05f9f4c6)
 
 5. Distribusi harga penutupan (Close). Distribusi harga Close divisualisasikan menggunakan histogram dan KDE. Grafik menunjukkan bahwa harga penutupan paling sering berada di kisaran 500 – 1.250, menunjukkan area akumulasi harga yang umum terjadi.
 
-
+![image](https://github.com/user-attachments/assets/cda1300c-cfe3-4600-8db1-8dec84f181fe)
 
 6. Korelasi antar fitur. Heatmap korelasi memperlihatkan hubungan kuat antara fitur **`Open`**, **`High`**, **`Low`**, **`Close`**, dan **`Adj Close`** dengan nilai korelasi di atas 0.98. Fitur **`Volume`** menunjukkan korelasi lemah terhadap variabel lain, berada pada kisaran 0.13–0.22. Informasi ini penting untuk pemilihan fitur pada proses pemodelan.
 
-
+![image](https://github.com/user-attachments/assets/ad052715-141d-4534-8754-322d5fee4d8a)
 
 ## Data Preparation
 
