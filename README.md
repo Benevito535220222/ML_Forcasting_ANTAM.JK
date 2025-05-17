@@ -48,29 +48,23 @@ Evaluasi: Dilakukan menggunakan metrik Mean Absolute Error (MAE), Root Mean Squa
 
 Untuk meningkatkan akurasi prediksi, dilakukan tuning pada hyperparameter, seperti jumlah unit neuron di lapisan model, ukuran batch, optimizer, dan jumlah epoch pelatihan. Penyempurnaan parameter ini bertujuan agar model dapat lebih efektif dalam mempelajari pola-pola kompleks yang ada dalam data.
 
-Evaluasi: Performa model yang telah di-tune akan dibandingkan dengan model baseline. Solusi ini dianggap berhasil apabila terdapat penurunan dalam nilai MAE dan R2 dibandingkan dengan model awal.
+Evaluasi: Performa model yang telah di-tune akan dibandingkan dengan model baseline. Solusi ini dianggap berhasil apabila terdapat penurunan dalam nilai MAE dan kenaikan nilai R2 dibandingkan dengan model baseline.
 
 ## Data Understanding
 
 Data yang digunakan dalam proyek ini merupakan data historis harga saham PT Aneka Tambang Tbk (ANTM) yang diperoleh dari platform keuangan Yahoo Finance, dengan kode saham ANTM.JK. Dataset ini mencakup rentang waktu harian dan dapat diunduh secara publik melalui tautan berikut: https://www.kaggle.com/datasets/muhardianabasandi/antam-stock-market-by-kitto
 
-Dataset tersebut berisi informasi perdagangan harian dan harga saham dari tahun 2005 - 2021 untuk analisis dan prediksi. Total data terdiri dari 3.808 baris yang merepresentasikan hari perdagangan bursa, tanpa mencakup hari libur atau akhir pekan.
+Dataset ini berisi informasi terkait aktivitas perdagangan dan harga saham harian yang tercatat dari tahun 2005 hingga 2021. Total terdapat 3.808 entri data, yang masing-masing merepresentasikan satu hari aktif perdagangan di bursa saham. Hari libur nasional dan akhir pekan tidak termasuk dalam cakupan data. Dataset ini terdiri dari 7 variabel utama. Variabel-variabel pada dataset ANTM adalah sebagai berikut:
 
-Variabel-variabel pada dataset ANTM adalah sebagai berikut:
-
-**`Date`** : Tanggal transaksi saham (format: YYYY-MM-DD).
-
-**`Open`** : Harga saham saat pasar dibuka
-
-**`High`** : Harga tertinggi yang dicapai pada hari itu
-
-**`Low`** : Harga terendah yang dicapai pada hari itu
-
-**`Close`** : Harga saham saat pasar ditutup
-
-**`Adj Close`** : Harga penutupan yang disesuaikan dengan pembagian dividen dan aksi korporasi
-
-**`Volume`** : Jumlah saham yang diperdagangkan dalam satu hari
+|Variabel|Deskripsi|
+|-|-|
+|Date|Tanggal transaksi saham (format: YYYY-MM-DD)|
+|Open|Harga saham saat pasar dibuka|
+|High|Harga tertinggi yang dicapai pada hari itu|
+|Low|Harga terendah yang dicapai pada hari itu|
+|Close|Harga saham saat pasar ditutup|
+|Adj Close|Harga penutupan yang disesuaikan dengan pembagian dividen dan aksi korporasi|
+|Volume|Jumlah saham yang diperdagangkan dalam satu hari|
 
 ### Exploratory Data Analysis (EDA)
 
@@ -78,25 +72,21 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 
 1. Pemeriksaan missing values. Setelah pemeriksaan, ditemukan bahwa setiap kolom harga dan volume memiliki 1 missing value pada dataset, yaitu pada kolom:
 
-    **`Date`**: 0 nilai hilang
+    |Variabel|Jumlah Missing Value|
+    |-|-|
+    |Date|0|
+    |Open|1|
+    |High|1|
+    |Low|1|
+    |Close|1|
+    |Adj Close|1|
+    |Volume|1|
 
-    **`Open`**: 1 nilai hilang
-
-    **`High`**: 1 nilai hilang
-
-    **`Low`**: 1 nilai hilang
-
-    **`Close`**: 1 nilai hilang
-
-    **`Adj Close`**: 1 nilai hilang
-
-    **`Volume`**: 1 nilai hilang
-
-    Karena hanya sedikit nilai yang hilang, baris tersebut dihapus dari dataset agar proses analisis dan pemodelan bisa dilakukan dengan baik.
+    Karena hanya sedikit nilai yang hilang, baris tersebut akan dihapus dari dataset agar proses analisis dan pemodelan bisa dilakukan dengan baik.
 
 2. Pemeriksaan duplikasi. Pemeriksaan duplikasi menggunakan **`df.duplicated()`** menunjukkan bahwa tidak terdapat baris duplikat, sehingga tidak perlu dilakukan pembersihan terkait hal ini.
 
-3. Pemeriksaan outlier. Outlier dideteksi menggunakan metode IQR (Interquartile Range) pada kolom Close. Ditemukan 298 data outlier yang tersebar pada beberapa periode. Visualisasi menunjukkan bahwa sebagian besar outlier terjadi pada masa krisis global (2007–2008) dan pandemi COVID-19 (2020), yang merefleksikan volatilitas harga ekstrem di pasar saham.
+3. Pemeriksaan outlier. Outlier dianalisis menggunakan metode Interquartile Range (IQR) khususnya pada kolom Close. Ditemukan 298 data outlier, yang mayoritas terjadi pada masa krisis global 2007–2008 dan pandemi COVID-19 tahun 2020. Outlier ini mencerminkan volatilitas pasar yang signifikan jadi tidak dihapus, karena dianggap sebagai bagian dari fenomena pasar yang valid.
 
 ![image](https://github.com/user-attachments/assets/96c74f49-b332-498e-a046-765f08e0d135)
 
@@ -117,62 +107,81 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 1. Menghapus missing value 
 . Pada dataset ditemukan satu baris data yang memiliki nilai kosong, dan baris tersebut dihapus dengan **`dropna()`**.
 
-    Alasan:  Missing value dapat mengganggu proses pelatihan model dan menyebabkan error pada model deep learning.
+    Alasan: Model deep learning seperti LSTM dan GRU tidak dapat menangani nilai kosong secara langsung. Kehadiran missing value dapat menyebabkan kesalahan saat pelatihan. Karena jumlahnya sangat sedikit, penghapusan baris merupakan metode yang tepat dan tidak mempengaruhi distribusi data secara signifikan.
 
 2. Seleksi fitur. Kolom yang digunakan untuk pelatihan model adalah:
 
     **`Open`**, **`High`**, **`Low`**, **`Close`**, dan **`Adj Close`**
 
-    Alasan: Fitur-fitur ini memiliki korelasi langsung terhadap harga penutupan saham dan umum digunakan dalam analisis pasar saham.
+    Alasan: Fitur-fitur ini memiliki korelasi tinggi satu sama lain dan secara langsung memengaruhi harga penutupan saham. Volume tidak digunakan karena memiliki korelasi yang lemah terhadap target (Close) berdasarkan hasil eksplorasi data sebelumnya.
 
 3. Normalisasi data. Data dinormalisasi menggunakan **`MinMaxScaler()`** dari library **`sklearn.preprocessing`**, sehingga semua nilai fitur berada dalam rentang [0, 1].
 
-    Alasan: LSTM sensitif terhadap skala data. Normalisasi membantu mempercepat konvergensi model dan menghindari dominasi fitur tertentu.
+    Alasan: Model LSTM dan GRU sensitif terhadap skala fitur. Normalisasi mempercepat proses pelatihan dan menghindari dominasi fitur tertentu yang memiliki skala lebih besar dibanding yang lain.
 
 4. Penerapan sliding window. Teknik sliding window digunakan untuk membentuk dataset time series dengan window_size sebesar 60 hari. Setiap input model terdiri dari 60 data historis sebelumnya untuk memprediksi harga hari ke-61.
 
-    Alasan: Sliding window memungkinkan model mempelajari pola urutan dalam data historis yang relevan untuk prediksi ke depan.
+    Alasan: Pendekatan ini memungkinkan model untuk mempelajari pola temporal dalam data historis. Sliding window menciptakan rangkaian data berurutan yang sangat penting untuk model berbasis memori jangka panjang seperti LSTM dan GRU.
 
 5. Penyesuaian tanggal dengan dataset. Setelah sliding window diterapkan, tanggal data juga disesuaikan agar tetap sejajar dengan hasil preprocessing.
 
-    Alasan: Diperlukan untuk evaluasi dan visualisasi hasil prediksi secara akurat berdasarkan waktu.
+    Alasan: Penyesuaian ini penting untuk memastikan bahwa hasil prediksi dapat divisualisasikan dan dievaluasi secara akurat berdasarkan waktu yang sebenarnya. Ini juga mendukung kejelasan saat membandingkan prediksi model terhadap data aktual.
 
 6. Split data latih dan uji. Data dibagi menjadi data latih dan data uji menggunakan rasio 80:20 tanpa melakukan shuffling, karena urutan waktu harus dipertahankan dalam data time series.
 
-    Alasan: Memastikan model dilatih dengan data masa lalu dan diuji dengan data masa depan secara kronologis, sesuai karakteristik prediksi time series.
+    Alasan: Dalam prediksi deret waktu, penting untuk menggunakan data masa lalu untuk memprediksi masa depan. Jika melakukan shuffling akan menghancurkan urutan waktu dan menghasilkan kebocoran data yang tidak valid. Oleh karena itu, pembagian dilakukan secara kronologis.
 
 ## Modeling
 
-**1. Arsitektur model**
+**1. Arsitektur dan parameter model**
 
 **a. Model LSTM (Long Short-Term Memory)**
 
-LSTM digunakan karena memiliki memori internal yang mampu menangkap ketergantungan jangka panjang antar waktu.
+LSTM dipilih karena kemampuannya dalam mengelola informasi jangka panjang dan pendek melalui struktur memori internalnya yang terdiri dari cell state dan tiga jenis gate (input, forget, dan output gate). Arsitektur ini sangat cocok untuk mengenali pola berulang dalam data historis seperti harga saham harian.
 
-Model terdiri dari:
+Struktur model:
+- 2 lapisan LSTM bertingkat:
+    - Lapisan pertama memiliki 32 unit dan return_sequences=True agar output bisa digunakan sebagai input ke lapisan LSTM berikutnya.
+    - Lapisan kedua memiliki 32 unit dan return_sequences=False karena ini merupakan LSTM terakhir.
 
-- 2 lapisan LSTM berturut-turut, masing-masing dengan sejumlah unit (neuron).
-- 1 lapisan Dense (fully connected) sebagai output yang memprediksi harga penutupan saham.
+- 1 lapisan Dense (fully connected):
+    - Digunakan untuk menghasilkan output akhir berupa prediksi harga penutupan.
 
-Fungsi aktivasi yang digunakan secara default adalah tanh pada LSTM, sedangkan output layer menggunakan fungsi linear.
+Fungsi aktivasi:
+
+- LSTM secara default menggunakan fungsi aktivasi tanh dan fungsi aktivasi sigmoid di gate internal.
+
+- Lapisan Dense output menggunakan fungsi aktivasi linear, karena target berupa variabel numerik kontinu.
 
 **b. Model GRU (Gated Recurrent Unit)**
 
-GRU merupakan versi lebih ringan dari LSTM, dengan jumlah parameter lebih sedikit namun tetap efektif menangani data deret waktu.
+GRU merupakan varian dari LSTM yang lebih sederhana secara struktur, karena hanya memiliki dua gate utama: update gate dan reset gate. Meskipun lebih ringan secara komputasi, GRU tetap menunjukkan performa yang kompetitif dalam banyak kasus pemodelan time series. GRU dipertimbangkan sebagai alternatif model karena lebih cepat dalam proses pelatihan dan menghindari overfitting pada dataset dengan ukuran terbatas.
 
-Arsitektur mirip dengan LSTM: 
-- 2 lapisan GRU 
-- 1 lapisan Dense sebagai output.
+Struktur model:
+- 2 lapisan GRU:
 
-**2. Parameter model dan hyperparameter tuning**
+    - Lapisan pertama: 32 unit dengan return_sequences=True.
+    - Lapisan kedua: 32 unit, tanpa return_sequences.
 
-Pertama, model LSTM dan GRU dilatih tanpa melakukan hyperparameter tuning untuk menghasilkan baseline model. Nilai-nilai parameter default yang digunakan dalam model baseline adalah **`units=32`**, **`batch_size=32`**, **`epoch=10`**, dan **`optimizer=adam`**. Baseline ini berfungsi sebagai pembanding terhadap hasil model setelah dilakukan optimasi parameter, sehingga dapat diketahui seberapa besar peningkatan performa yang diperoleh setelah tuning dilakukan.
+- 1 lapisan Dense output:
 
-Selanjutnya, proses hyperparameter tuning dilakukan menggunakan teknik RandomizedSearchCV, yaitu metode pencarian kombinasi parameter secara acak dari parameter yang telah ditentukan sebelumnya. Dalam proses ini digunakan 3-fold cross-validation, di mana data latih dibagi menjadi tiga bagian untuk validasi silang untuk menghindari overfitting. Model LSTM dan GRU yang menunjukkan performa terbaik pada data validasi selama proses tuning kemudian dipilih dan digunakan sebagai model terbaik.
+    - Memprediksi harga penutupan saham.
+
+Fungsi aktivasi:
+
+- Aktivasi internal GRU juga menggunakan tanh untuk transformasi data dan sigmoid untuk gate.
+
+- Lapisan output menggunakan linear untuk regresi nilai kontinu.
+
+Pada proses ini, model LSTM dan GRU dilatih tanpa melakukan hyperparameter tuning untuk menghasilkan baseline model. Nilai-nilai parameter default yang digunakan dalam model baseline adalah **`units=32`**, **`batch_size=32`**, **`epoch=10`**, dan **`optimizer=adam`** untuk kedua model. Baseline ini berfungsi sebagai pembanding terhadap hasil model setelah dilakukan optimasi parameter, sehingga dapat diketahui seberapa besar peningkatan performa yang diperoleh setelah tuning dilakukan.
+
+**2. Hyperparameter tuning**
+
+Proses hyperparameter tuning dilakukan untuk mengoptimalkan performa model LSTM dan GRU dengan mencari kombinasi parameter terbaik secara sistematis. Pada proyek ini, digunakan metode **`RandomizedSearchCV`**, yaitu pencarian acak pada ruang parameter yang telah didefinisikan di **`param_grid`**, untuk menemukan konfigurasi yang paling optimal. Pada tahap tuning ini setiap model melakukan 3-fold cross-validation. Data latih dibagi menjadi 3 subset untuk melakukan validasi silang, sehingga model diuji pada data yang berbeda selama proses tuning untuk mengurangi risiko overfitting.
 
 Beberapa parameter penting yang digunakan dan diuji melalui hyperparameter tuning:
 
-|Parameter|Fungsi|Nilai yang diuji|
+|Parameter|Fungsi|Parameter yang diuji|
 |-|-|-|
 |units|Jumlah neuron dalam tiap layer LSTM/GRU|32, 50, 64|
 |batch_size|Ukuran batch data saat pelatihan|16, 32|
@@ -181,11 +190,11 @@ Beberapa parameter penting yang digunakan dan diuji melalui hyperparameter tunin
 
 **3. Pelatihan ulang model terbaik**
 
-Setelah parameter terbaik ditemukan melalui proses tuning, model LSTM dan GRU dibangun ulang menggunakan konfigurasi optimal tersebut. Selanjutnya, dilakukan pelatihan ulang pada seluruh data latih dengan parameter terbaik untuk memastikan model memperoleh pembelajaran maksimal dari data yang tersedia dan menghasilkan performa prediksi yang lebih akurat.
+Setelah parameter terbaik ditemukan melalui proses tuning, model LSTM dan GRU dibangun ulang dengan menggunakan konfigurasi optimal tersebut. Selanjutnya, dilakukan pelatihan ulang pada seluruh data latih dengan parameter terbaik untuk memastikan model memperoleh pembelajaran maksimal dari data yang tersedia dan menghasilkan performa prediksi yang lebih akurat.
 
 **4. Evaluasi model**
 
-Pemilihan model terbaik dilakukan dengan membandingkan performa menggunakan empat metrik evaluasi utama: Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), dan R² Score. Model yang dianggap memiliki kinerja terbaik adalah model dengan nilai MAE, MSE, dan RMSE yang paling rendah serta nilai R² yang paling tinggi. Evaluasi dilakukan pada data pengujian untuk mengukur seberapa baik model dapat melakukan generalisasi terhadap data yang belum pernah dilihat sebelumnya.
+Pemilihan model terbaik dilakukan dengan membandingkan performa menggunakan empat metrik evaluasi utama: Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), dan R2 Score. Model yang dianggap memiliki kinerja terbaik adalah model dengan nilai MAE, MSE, dan RMSE yang paling rendah serta nilai R² yang paling tinggi. Evaluasi dilakukan pada data pengujian untuk mengukur seberapa baik model dapat melakukan generalisasi terhadap data yang belum pernah dilihat sebelumnya.
 
 Berdasarkan hasil evaluasi, model GRU dengan hyperparameter tuning melalui Random Search menunjukkan performa terbaik dibandingkan model lainnya. Model ini mencatatkan nilai MAE sebesar 30.55, RMSE sebesar 53.48, dan R2 Score sebesar 0.9821. Angka-angka ini menunjukkan bahwa model GRU hasil tuning paling akurat dalam memprediksi harga saham ANTM, karena kesalahan prediksi lebih rendah dan kemampuan menjelaskan variasi data lebih tinggi dibandingkan model baseline maupun model LSTM.
 
@@ -248,7 +257,7 @@ Berikut adalah penjelasan matriks evaluasi model:
 
 Tujuan utama dari proyek ini adalah untuk membantu investor dan pelaku pasar dalam menghadapi fluktuasi harga saham PT Aneka Tambang Tbk (ANTM) yang tinggi dan dipengaruhi oleh berbagai faktor eksternal, seperti harga emas dunia, kondisi geopolitik, inflasi, dan nilai tukar mata uang asing. Dalam situasi seperti ini, metode konvensional seperti analisis teknikal dan fundamental sering kali kurang efektif karena tidak mampu mengenali pola non-linear dan kompleks yang terdapat dalam data historis saham.
 
-Model yang dibangun menggunakan pendekatan Recurrent Neural Network (RNN), yaitu Long Short-Term Memory (LSTM) dan Gated Recurrent Unit (GRU), secara langsung menjawab pernyataan masalah yang telah diidentifikasi. Kedua model ini terbukti mampu mengenali pola sekuensial yang kompleks dan dinamis dalam data historis, yang sebelumnya sulit ditangkap oleh metode konvensional. Berdasarkan hasil evaluasi, model GRU dengan hyperparameter tuning melalui Randomized Search memberikan performa terbaik dengan nilai MAE terendah (30.55), RMSE terendah (53.48), dan R2 tertinggi (0.9821). Hal ini menunjukkan bahwa model mampu menjelaskan sebagian besar variasi dalam data dan memberikan prediksi yang sangat akurat.
+Model yang dibangun menggunakan pendekatan Recurrent Neural Network (RNN), yaitu Long Short-Term Memory (LSTM) dan Gated Recurrent Unit (GRU), secara langsung menjawab pernyataan masalah yang telah diidentifikasi. Kedua model ini terbukti mampu mengenali pola sekuensial yang kompleks dan dinamis dalam data historis, yang sebelumnya sulit ditangkap oleh metode konvensional. Berdasarkan hasil evaluasi, model GRU dengan hyperparameter tuning melalui Randomized Search memberikan performa terbaik dengan nilai MAE (30.55), RMSE (53.48), dan R2 (0.9821). Hal ini menunjukkan bahwa model mampu menjelaskan sebagian besar variasi dalam data dan memberikan prediksi yang sangat akurat.
 
 Dilihat dari sisi goals, proyek ini berhasil mengoptimalkan penggunaan data historis untuk membangun model prediktif yang akurat dan andal. Akurasi tinggi dari model berkontribusi langsung dalam mendukung pengambilan keputusan investasi yang lebih tepat, khususnya dalam situasi pasar yang fluktuatif. Selain itu, penerapan hyperparameter tuning terbukti meningkatkan performa model, memperkuat solusi yang diusulkan dan menunjukkan bahwa strategi optimasi memberikan dampak nyata terhadap kualitas prediksi.
 
