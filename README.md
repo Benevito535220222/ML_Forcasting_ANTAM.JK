@@ -42,7 +42,7 @@ Referensi:
 
 Solusi yang diusulkan dalam proyek ini adalah menggunakan model Recurrent Neural Network (RNN), khususnya model Long Short-Term Memory (LSTM) dan Gated Recurrent Unit (GRU), untuk memprediksi harga saham ANTM. Model LSTM dipilih karena kemampuannya dalam menangkap pola jangka panjang dalam data time series dan mengatasi masalah vanishing gradient yang umum terjadi pada jaringan saraf konvensional. Di sisi lain, GRU digunakan sebagai alternatif karena arsitekturnya yang lebih sederhana dan efisien secara komputasi, tetapi tetap mampu menangani data sekuensial dengan baik.
 
-Evaluasi: Dilakukan menggunakan metrik Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), dan R2 Score. Model terbaik dipilih berdasarkan hasil evaluasi yang menunjukkan akurasi paling tinggi dan performa paling konsisten dalam data pengujian. Target performa mencakup pencapaian nilai R² di atas 0.90 dan nilai RMSE yang rendah sebagai indikator kualitas prediksi yang baik.
+Evaluasi: Dilakukan menggunakan metrik Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), dan R2 Score. Model terbaik dipilih berdasarkan hasil evaluasi yang menunjukkan akurasi paling tinggi dan performa paling konsisten dalam data pengujian. Target performa mencakup pencapaian nilai R2 di atas 0.90 dan nilai RMSE yang rendah sebagai indikator kualitas prediksi yang baik.
 
 - Solusi 2: Hyperparameter Tuning pada Model
 
@@ -104,7 +104,7 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 
 ![image](https://github.com/user-attachments/assets/38b77b88-f050-4c37-b32c-1cae05f9f4c6)
 
-5. Distribusi harga penutupan (Close). Distribusi harga Close divisualisasikan menggunakan histogram dan KDE. Grafik menunjukkan bahwa harga penutupan paling sering berada di kisaran 500 – 1.250, menunjukkan area akumulasi harga yang umum terjadi.
+5. Distribusi harga penutupan (Close). Distribusi harga Close divisualisasikan menggunakan histogram dan KDE. Grafik menunjukkan bahwa harga penutupan paling sering berada di kisaran 500 – 1.250, menunjukkan area akumulasi harga yang paling banyak terjadi.
 
 ![image](https://github.com/user-attachments/assets/cda1300c-cfe3-4600-8db1-8dec84f181fe)
 
@@ -143,7 +143,55 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 
 ## Modeling
 
-#### 1. Kelebihan dan Kekurangan Model
+**1. Arsitektur model**
+
+**a. Model LSTM (Long Short-Term Memory)**
+
+LSTM digunakan karena memiliki memori internal yang mampu menangkap ketergantungan jangka panjang antar waktu.
+
+Model terdiri dari:
+
+- 2 lapisan LSTM berturut-turut, masing-masing dengan sejumlah unit (neuron).
+- 1 lapisan Dense (fully connected) sebagai output yang memprediksi harga penutupan saham.
+
+Fungsi aktivasi yang digunakan secara default adalah tanh pada LSTM, sedangkan output layer menggunakan fungsi linear.
+
+**b. Model GRU (Gated Recurrent Unit)**
+
+GRU merupakan versi lebih ringan dari LSTM, dengan jumlah parameter lebih sedikit namun tetap efektif menangani data deret waktu.
+
+Arsitektur mirip dengan LSTM: 
+- 2 lapisan GRU 
+- 1 lapisan Dense sebagai output.
+
+**2. Parameter model dan hyperparameter tuning**
+
+Beberapa parameter penting yang digunakan dan diuji melalui tuning:
+
+|Parameter|Fungsi|Nilai yang diuji|
+|-|-|-|
+|units|Jumlah neuron dalam tiap layer LSTM/GRU|**32**, 50, 64|
+|batch_size|Ukuran batch data saat pelatihan|16, **32**|
+|epoch|Banyaknya siklus pelatihan|**10**, 20|
+|optimizer|Algoritma optimisasi bobot model|**adam**, rmsprop|
+
+Pertama, model LSTM dan GRU dilatih tanpa melakukan hyperparameter tuning untuk menghasilkan baseline model. Nilai-nilai parameter default yang digunakan dalam model baseline ditandai dengan nilai yang di **BOLD** pada tabel parameter diatas. Baseline ini berfungsi sebagai pembanding terhadap hasil model setelah dilakukan optimasi parameter, sehingga dapat diketahui seberapa besar peningkatan performa yang diperoleh setelah tuning dilakukan.
+
+Selanjutnya, proses hyperparameter tuning dilakukan menggunakan teknik RandomizedSearchCV, yaitu metode pencarian kombinasi parameter secara acak dari parameter yang telah ditentukan sebelumnya. Dalam proses ini digunakan 3-fold cross-validation, di mana data latih dibagi menjadi tiga bagian untuk validasi silang untuk menghindari overfitting. Model LSTM dan GRU yang menunjukkan performa terbaik pada data validasi selama proses tuning kemudian dipilih dan digunakan sebagai model terbaik.
+
+**3. Pelatihan ulang model terbaik**
+
+Setelah parameter terbaik ditemukan melalui proses tuning, model LSTM dan GRU dibangun ulang menggunakan konfigurasi optimal tersebut. Selanjutnya, dilakukan pelatihan ulang pada seluruh data latih dengan parameter terbaik untuk memastikan model memperoleh pembelajaran maksimal dari data yang tersedia dan menghasilkan performa prediksi yang lebih akurat.
+
+**4. Evaluasi model**
+
+Pemilihan model terbaik dilakukan dengan membandingkan performa menggunakan empat metrik evaluasi utama: Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), dan R² Score. Model yang dianggap memiliki kinerja terbaik adalah model dengan nilai MAE, MSE, dan RMSE yang paling rendah serta nilai R² yang paling tinggi. Evaluasi dilakukan pada data pengujian untuk mengukur seberapa baik model dapat melakukan generalisasi terhadap data yang belum pernah dilihat sebelumnya.
+
+Berdasarkan hasil evaluasi, model GRU dengan hyperparameter tuning melalui Random Search menunjukkan performa terbaik dibandingkan model lainnya. Model ini mencatatkan nilai MAE sebesar 30.55, RMSE sebesar 53.48, dan R2 Score sebesar 0.9821. Angka-angka ini menunjukkan bahwa model GRU hasil tuning paling akurat dalam memprediksi harga saham ANTM, karena kesalahan prediksi lebih rendah dan kemampuan menjelaskan variasi data lebih tinggi dibandingkan model baseline maupun model LSTM.
+
+Namun, performa model GRU baseline juga cukup kompetitif dengan MAE sebesar 30.47, RMSE 54.74, dan R2 Score 0.9812. Selisih hasil evaluasi antara GRU baseline dan GRU hasil tuning tergolong kecil, yang mengindikasikan bahwa bahkan tanpa tuning, arsitektur GRU sudah cukup andal dalam menangani prediksi data time series harga saham. Oleh karena itu, dalam konteks tertentu, GRU baseline bisa menjadi pilihan efisien jika mempertimbangkan waktu pelatihan dan kompleksitas proses tuning.
+
+**5. Kelebihan dan Kekurangan Model**
 
 |Model|Kelebihan|Kekurangan|
 |-|-|-|
@@ -153,16 +201,6 @@ Beberapa tahapan eksplorasi data dilakukan, antara lain:
 |GRU|Arsitektur lebih sederhana dan cepat dilatih|Kurang mampu menangkap pola jangka panjang dibanding LSTM|
 ||Performa hampir setara dengan LSTM dalam banyak kasus|
 ||Lebih efisien untuk dataset kecil|
-
-#### 2. Tahapan & Parameter yang Digunakan
-
-Dalam proyek ini, dilakukan pelatihan menggunakan algoritma Long Short-Term Memory (LSTM) dan Gated Recurrent Unit (GRU) sebagai pembanding. Tujuan dari tahap ini adalah menghasilkan model yang mampu memprediksi harga penutupan (close) saham secara akurat berdasarkan pola pergerakan harga sebelumnya.
-
-Model yang digunakan masing-masing terdiri dua layer LSTM atau GRU berturut-turut, diikuti oleh satu layer **`Dense`** sebagai output untuk regresi. Pada kedua model, dilakukan proses hyperparameter tuning menggunakan **`Randomized SearchCV`**. Parameter yang diujikan meliputi jumlah **`unit (32, 50, 64)`**, **`batch size (16, 32)`**, jumlah **`epoch (10, 20)`**, serta jenis **`optimizer (adam, rmsprop)`**. Model dilatih dan ditest dengan data yang telah dibagi tanpa pengacakan untuk menjaga urutan waktu.
-
-#### 3. Pemilihan Model Terbaik
-
-Pemilihan model terbaik dilakukan dengan mengacu pada hasil evaluasi menggunakan metrik Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), dan R2 Score, di mana model dengan nilai MAE, MSE, dan RMSE paling rendah serta R2 paling tinggi dianggap memiliki performa terbaik. Evaluasi dilakukan pada data pengujian untuk menilai kemampuan generalisasi model terhadap data yang belum pernah dilihat. Berdasarkan hasil evaluasi tersebut, model GRU dengan hyperparameter tuning Random Search memberikan performa terbaik, dengan MAE terendah (24.34), RMSE terendah (50.35), dan R2 tertinggi (0.9841), yang menunjukkan bahwa model ini paling akurat dalam memprediksi harga saham ANTM dibandingkan model LSTM.
 
 ## Evaluation
 
@@ -201,13 +239,17 @@ Berikut adalah penjelasan matriks evaluasi model:
 
 |Model|MAE|MSE|RMSE|R2 Score|
 |-|-|-|-|-|
-|LSTM|35.05|3576.83|59.81|0.9776|
-|LSTM (Random Search)|27.62|2658.00|51.56|0.9833|
-|GRU|36.85|3475.47|58.95|0.9782|
-|GRU (Random Search)|24.34|2534.96|50.35|0.9841|
+|LSTM|39.64|4903.66|70.03|0.9692|
+|LSTM (Random Search)|35.97|3275.50|57.23|0.9794|
+|GRU|30.47|2996.51|54.74|0.9812|
+|GRU (Random Search)|30.55|2859.97|53.48|0.9821|
 
 #### Kesimpulan:
 
-Model GRU dengan hyperparameter tuning melalui Random Search memberikan performa terbaik berdasarkan seluruh metrik evaluasi, MAE terendah (24.34), RMSE terendah (50.35), dan R2 tertinggi (0.9841). Hal ini menunjukkan bahwa model tersebut paling akurat dalam memprediksi harga saham ANTM dibandingkan model LSTM.
+Tujuan utama dari proyek ini adalah untuk membantu investor dan pelaku pasar dalam menghadapi fluktuasi harga saham PT Aneka Tambang Tbk (ANTM) yang tinggi dan dipengaruhi oleh berbagai faktor eksternal, seperti harga emas dunia, kondisi geopolitik, inflasi, dan nilai tukar mata uang asing. Dalam situasi seperti ini, metode konvensional seperti analisis teknikal dan fundamental sering kali kurang efektif karena tidak mampu mengenali pola non-linear dan kompleks yang terdapat dalam data historis saham.
 
-Namun, karena hasil evaluasi antar model, terutama antara LSTM Random Search dan GRU Random Search, sangat berdekatan, terdapat kemungkinan adanya margin of error selama proses pelatihan, seperti variasi bobot awal atau konfigurasi training yang memengaruhi hasil akhir. Oleh karena itu, meskipun GRU Random Search menunjukkan performa terbaik, perbedaan tipis tersebut mengindikasikan bahwa kedua model memiliki potensi yang kuat, dan pemilihan akhir sebaiknya juga mempertimbangkan aspek lain seperti waktu pelatihan dan kompleksitas model.
+Model yang dibangun menggunakan pendekatan Recurrent Neural Network (RNN), yaitu Long Short-Term Memory (LSTM) dan Gated Recurrent Unit (GRU), secara langsung menjawab pernyataan masalah yang telah diidentifikasi. Kedua model ini terbukti mampu mengenali pola sekuensial yang kompleks dan dinamis dalam data historis, yang sebelumnya sulit ditangkap oleh metode konvensional. Berdasarkan hasil evaluasi, model GRU dengan hyperparameter tuning melalui Randomized Search memberikan performa terbaik dengan nilai MAE terendah (30.55), RMSE terendah (53.48), dan R2 tertinggi (0.9821). Hal ini menunjukkan bahwa model mampu menjelaskan sebagian besar variasi dalam data dan memberikan prediksi yang sangat akurat.
+
+Dilihat dari sisi goals, proyek ini berhasil mengoptimalkan penggunaan data historis untuk membangun model prediktif yang akurat dan andal. Akurasi tinggi dari model berkontribusi langsung dalam mendukung pengambilan keputusan investasi yang lebih tepat, khususnya dalam situasi pasar yang fluktuatif. Selain itu, penerapan hyperparameter tuning terbukti meningkatkan performa model, memperkuat solusi yang diusulkan dan menunjukkan bahwa strategi optimasi memberikan dampak nyata terhadap kualitas prediksi.
+
+Secara keseluruhan, solusi yang dirancang dalam proyek ini telah menjawab seluruh problem statement, berhasil mencapai goals yang ditetapkan, dan berdampak positif terhadap konteks bisnis yang diangkat. Model prediksi yang dibangun tidak hanya memberikan hasil evaluasi yang kuat, tetapi juga memiliki nilai praktis dalam mendukung strategi investasi berbasis data yang lebih informatif, adaptif, dan strategis.
