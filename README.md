@@ -166,18 +166,18 @@ Arsitektur mirip dengan LSTM:
 
 **2. Parameter model dan hyperparameter tuning**
 
-Beberapa parameter penting yang digunakan dan diuji melalui tuning:
+Pertama, model LSTM dan GRU dilatih tanpa melakukan hyperparameter tuning untuk menghasilkan baseline model. Nilai-nilai parameter default yang digunakan dalam model baseline adalah **`units=32`**, **`batch_size=32`**, **`epoch=10`**, dan **`optimizer=adam`**. Baseline ini berfungsi sebagai pembanding terhadap hasil model setelah dilakukan optimasi parameter, sehingga dapat diketahui seberapa besar peningkatan performa yang diperoleh setelah tuning dilakukan.
+
+Selanjutnya, proses hyperparameter tuning dilakukan menggunakan teknik RandomizedSearchCV, yaitu metode pencarian kombinasi parameter secara acak dari parameter yang telah ditentukan sebelumnya. Dalam proses ini digunakan 3-fold cross-validation, di mana data latih dibagi menjadi tiga bagian untuk validasi silang untuk menghindari overfitting. Model LSTM dan GRU yang menunjukkan performa terbaik pada data validasi selama proses tuning kemudian dipilih dan digunakan sebagai model terbaik.
+
+Beberapa parameter penting yang digunakan dan diuji melalui hyperparameter tuning:
 
 |Parameter|Fungsi|Nilai yang diuji|
 |-|-|-|
-|units|Jumlah neuron dalam tiap layer LSTM/GRU|**32**, 50, 64|
-|batch_size|Ukuran batch data saat pelatihan|16, **32**|
-|epoch|Banyaknya siklus pelatihan|**10**, 20|
-|optimizer|Algoritma optimisasi bobot model|**adam**, rmsprop|
-
-Pertama, model LSTM dan GRU dilatih tanpa melakukan hyperparameter tuning untuk menghasilkan baseline model. Nilai-nilai parameter default yang digunakan dalam model baseline ditandai dengan nilai yang di **BOLD** pada tabel parameter diatas. Baseline ini berfungsi sebagai pembanding terhadap hasil model setelah dilakukan optimasi parameter, sehingga dapat diketahui seberapa besar peningkatan performa yang diperoleh setelah tuning dilakukan.
-
-Selanjutnya, proses hyperparameter tuning dilakukan menggunakan teknik RandomizedSearchCV, yaitu metode pencarian kombinasi parameter secara acak dari parameter yang telah ditentukan sebelumnya. Dalam proses ini digunakan 3-fold cross-validation, di mana data latih dibagi menjadi tiga bagian untuk validasi silang untuk menghindari overfitting. Model LSTM dan GRU yang menunjukkan performa terbaik pada data validasi selama proses tuning kemudian dipilih dan digunakan sebagai model terbaik.
+|units|Jumlah neuron dalam tiap layer LSTM/GRU|32, 50, 64|
+|batch_size|Ukuran batch data saat pelatihan|16, 32|
+|epoch|Banyaknya siklus pelatihan|10, 20|
+|optimizer|Algoritma optimisasi bobot model|adam, rmsprop|
 
 **3. Pelatihan ulang model terbaik**
 
