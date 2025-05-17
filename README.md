@@ -192,7 +192,7 @@ Berikut adalah penjelasan matriks evaluasi model:
 
 4. R2 Score (Coefficient of Determination)
 
-    $R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}$
+    ![Screenshot 2025-05-17 083734](https://github.com/user-attachments/assets/c0b6bf49-57ef-4180-b87a-d01af794f276)
 
     Penjelasan:
     R2 Score mengukur proporsi variasi dalam data yang dapat dijelaskan oleh model. Nilai R2 berkisar antara 0 dan 1, di mana nilai mendekati 1 menunjukkan bahwa model dapat menjelaskan sebagian besar variabilitas data. Semakin tinggi nilai R2, semakin baik model dalam menjelaskan hubungan antara fitur dan target.
